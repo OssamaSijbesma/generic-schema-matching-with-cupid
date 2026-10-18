@@ -3,6 +3,7 @@
 import re
 import xml.etree.ElementTree as ET
 from datetime import datetime
+from math import isfinite
 
 import pandas as pd
 
@@ -99,6 +100,7 @@ def load_schema_tree(path):
 # ---- linguistic matching -------------------------------------------------
 def tokenize(name):
     # Split camelCase first, then split on punctuation, underscores, and spaces.
+    name = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1 \2", name)
     name = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", name)
     return [t.lower() for t in re.split(r"[^A-Za-z0-9]+", name) if t]
 
@@ -117,27 +119,28 @@ def _token_sim(a, b):
 
 
 def name_sim(n1, n2):
-    t1, t2 = tokenize(n1), tokenize(n2)
+    # Cupid treats the token collections as sets, so repeated tokens count once.
+    t1, t2 = sorted(set(tokenize(n1))), sorted(set(tokenize(n2)))
     if not t1 or not t2:
         return 0.0
-    # Average best token matches in both directions so extra tokens affect the score.
-    fwd = sum(max(_token_sim(a, b) for b in t2) for a in t1) / len(t1)
-    bwd = sum(max(_token_sim(b, a) for a in t1) for b in t2) / len(t2)
-    return (fwd + bwd) / 2
+    # Average every token's best cross-name match, weighted by the total token count.
+    best_from_t1 = sum(max(_token_sim(a, b) for b in t2) for a in t1)
+    best_from_t2 = sum(max(_token_sim(b, a) for a in t1) for b in t2)
+    return (best_from_t1 + best_from_t2) / (len(t1) + len(t2))
 
 
 TYPES = ["integer", "float", "boolean", "date", "string"]
 
-# Data type compatibility table in [0, 1]; symmetric. Used as the initial structural
-# similarity of leaf pairs (Cupid, Section 5).
+# Cupid initializes leaf structural similarity with type-compatibility values in [0, 0.5],
+# with identical types scored 0.5. Off-diagonal values below are implementation-selected.
 TYPE_COMPAT = pd.DataFrame(
     [
         # integer float boolean date string
-        [1.0, 0.8, 0.4, 0.2, 0.3],  # integer
-        [0.8, 1.0, 0.2, 0.2, 0.3],  # float
-        [0.4, 0.2, 1.0, 0.1, 0.3],  # boolean
-        [0.2, 0.2, 0.1, 1.0, 0.4],  # date
-        [0.3, 0.3, 0.3, 0.4, 1.0],  # string
+        [0.50, 0.40, 0.20, 0.10, 0.15],  # integer
+        [0.40, 0.50, 0.10, 0.10, 0.15],  # float
+        [0.20, 0.10, 0.50, 0.05, 0.15],  # boolean
+        [0.10, 0.10, 0.05, 0.50, 0.20],  # date
+        [0.15, 0.15, 0.15, 0.20, 0.50],  # string
     ],
     index=TYPES,
     columns=TYPES,
@@ -145,6 +148,9 @@ TYPE_COMPAT = pd.DataFrame(
 
 
 def type_compat(t1, t2):
+    # Missing or unsupported types provide no type-based evidence for a match.
+    if t1 not in TYPE_COMPAT.index or t2 not in TYPE_COMPAT.columns:
+        return 0.0
     return float(TYPE_COMPAT.loc[t1, t2])
 
 
@@ -152,25 +158,39 @@ def type_compat(t1, t2):
 def cupid_tree_match(
     source,
     target,
-    leaf_w_struct=0.2,
-    w_struct=0.2,
-    th_accept=0.7,
+    leaf_w_struct=0.5,
+    w_struct=0.6,
+    th_accept=0.5,
     th_high=0.6,
     th_low=0.35,
     c_inc=1.2,
     c_dec=0.9,
-    th_ns=0.7,
     **_,
 ):
+    """Match schema leaves using Cupid's bottom-up tree-similarity procedure.
+
+    Linguistic matching is a lightweight token-based approximation; Cupid's
+    full category construction and domain thesaurus are not implemented here.
+    """
+    if not 0.0 <= leaf_w_struct <= 1.0 or not 0.0 <= w_struct <= 1.0:
+        raise ValueError("Structural weights must be between 0 and 1.")
+    if not 0.0 <= th_low < th_accept < th_high <= 1.0:
+        raise ValueError(
+            "Thresholds must satisfy 0 <= th_low < th_accept < th_high <= 1."
+        )
+    if not isfinite(c_inc) or not isfinite(c_dec) or c_inc < 0.0 or c_dec < 0.0:
+        raise ValueError(
+            "Structural reinforcement factors must be finite and non-negative."
+        )
+
     # Post-order lists allow structural similarities to be propagated bottom-up.
     s_nodes, t_nodes = list(source.post_order()), list(target.post_order())
 
-    # Compute linguistic scores for every node pair, pruning very weak name matches.
+    # Compute the simplified pairwise linguistic score for every node pair.
     lsim = {}
     for s in s_nodes:
         for t in t_nodes:
-            ns = name_sim(s.name, t.name)
-            lsim[s, t] = ns if ns >= th_ns * 0.5 else 0.0
+            lsim[s, t] = name_sim(s.name, t.name)
 
     # Leaf structural similarity starts from the data type compatibility table.
     # Combine that evidence with name similarity; inner nodes begin with name evidence only.
@@ -189,6 +209,9 @@ def cupid_tree_match(
                 continue
             # Compare the fraction of each node's descendant leaves supported by a strong pair.
             ls, lt = s.leaves(), t.leaves()
+            # Avoid unlikely structural matches when subtree sizes differ substantially.
+            if max(len(ls), len(lt)) > 2 * min(len(ls), len(lt)):
+                continue
             strong_s = sum(any(wsim[a, b] > th_accept for b in lt) for a in ls)
             strong_t = sum(any(wsim[a, b] > th_accept for a in ls) for b in lt)
             ssim[s, t] = (strong_s + strong_t) / (len(ls) + len(lt))
@@ -201,7 +224,7 @@ def cupid_tree_match(
                 if wsim[s, t] < th_low
                 else None
             )
-            if factor:
+            if factor is not None:
                 for a in ls:
                     for b in lt:
                         ssim[a, b] = min(1.0, ssim[a, b] * factor)
