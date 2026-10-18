@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Schema2>
+  <PurchaseOrder>
+    <OrderNumber>9101</OrderNumber>
+    <ProductName>Brass fitting</ProductName>
+    <ShippingAddress>
+      <ShipTo>
+        <Name>Barbara Liskov</Name>
+        <Street>9 Elm Street</Street>
+        <City>Portland</City>
+        <Zip>97201</Zip>
+        <Telephone>503-555-0111</Telephone>
+      </ShipTo>
+    </ShippingAddress>
+    <BillingAddress>
+      <BillTo>
+        <Name>Liskov Substitution LLC</Name>
+        <Street>400 Congress Avenue</Street>
+        <City>Austin</City>
+        <Zip>78701</Zip>
+        <Telephone>512-555-0122</Telephone>
+      </BillTo>
+    </BillingAddress>
+  </PurchaseOrder>
+  <PurchaseOrder>
+    <OrderNumber>9102</OrderNumber>
+    <ProductName>Rubber gasket</ProductName>
+    <ShippingAddress>
+      <ShipTo>
+        <Name>Donald Knuth</Name>
+        <Street>14 Algorithm Way</Street>
+        <City>Seattle</City>
+        <Zip>98101</Zip>
+        <Telephone>206-555-0133</Telephone>
+      </ShipTo>
+    </ShippingAddress>
+    <BillingAddress>
+      <BillTo>
+        <Name>Art of Computing Inc</Name>
+        <Street>60 State Street</Street>
+        <City>Denver</City>
+        <Zip>80202</Zip>
+        <Telephone>303-555-0144</Telephone>
+      </BillTo>
+    </BillingAddress>
+  </PurchaseOrder>
+  <PurchaseOrder>
+    <OrderNumber>9103</OrderNumber>
+    <ProductName>Glass lens</ProductName>
+    <ShippingAddress>
+      <ShipTo>
+        <Name>Margaret Hamilton</Name>
+        <Street>5 Apollo Court</Street>
+        <City>Miami</City>
+        <Zip>33101</Zip>
+        <Telephone>305-555-0155</Telephone>
+      </ShipTo>
+    </ShippingAddress>
+    <BillingAddress>
+      <BillTo>
+        <Name>Guidance Computers Inc</Name>
+        <Street>88 Ocean Drive</Street>
+        <City>Phoenix</City>
+        <Zip>85001</Zip>
+        <Telephone>602-555-0166</Telephone>
+      </BillTo>
+    </BillingAddress>
+  </PurchaseOrder>
+</Schema2>

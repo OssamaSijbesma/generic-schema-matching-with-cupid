@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Schema1>
+  <PurchaseOrder>
+    <OrderNumber>7001</OrderNumber>
+    <ProductName>Steel bracket</ProductName>
+    <ShippingAddress>
+      <Address>
+        <Name>Ada Lovelace</Name>
+        <Street>12 Main Street</Street>
+        <City>Boston</City>
+        <Zip>12139</Zip>
+        <Telephone>617-555-0101</Telephone>
+      </Address>
+    </ShippingAddress>
+    <BillingAddress>
+      <Address>
+        <Name>Analytical Engines Ltd</Name>
+        <Street>500 Market Street</Street>
+        <City>New York</City>
+        <Zip>10001</Zip>
+        <Telephone>212-555-0123</Telephone>
+      </Address>
+    </BillingAddress>
+  </PurchaseOrder>
+  <PurchaseOrder>
+    <OrderNumber>7002</OrderNumber>
+    <ProductName>Aluminium housing</ProductName>
+    <ShippingAddress>
+      <Address>
+        <Name>Grace Hopper</Name>
+        <Street>8 Harbor Road</Street>
+        <City>Chicago</City>
+        <Zip>60601</Zip>
+        <Telephone>312-555-0142</Telephone>
+      </Address>
+    </ShippingAddress>
+    <BillingAddress>
+      <Address>
+        <Name>Compiler Works Inc</Name>
+        <Street>77 Lake Avenue</Street>
+        <City>Atlanta</City>
+        <Zip>30301</Zip>
+        <Telephone>404-555-0177</Telephone>
+      </Address>
+    </BillingAddress>
+  </PurchaseOrder>
+  <PurchaseOrder>
+    <OrderNumber>7003</OrderNumber>
+    <ProductName>Copper wire</ProductName>
+    <ShippingAddress>
+      <Address>
+        <Name>Alan Turing</Name>
+        <Street>3 Campus Drive</Street>
+        <City>Stanford</City>
+        <Zip>94305</Zip>
+        <Telephone>650-555-0188</Telephone>
+      </Address>
+    </ShippingAddress>
+    <BillingAddress>
+      <Address>
+        <Name>Enigma Systems</Name>
+        <Street>21 Orbit Lane</Street>
+        <City>Houston</City>
+        <Zip>77058</Zip>
+        <Telephone>713-555-0166</Telephone>
+      </Address>
+    </BillingAddress>
+  </PurchaseOrder>
+</Schema1>

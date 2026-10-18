@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PurchaseOrders>
+  <PurchaseOrder>
+    <Header>
+      <orderNumber>4500123</orderNumber>
+      <orderDate>14 March 2001</orderDate>
+      <ourAccountCode>ACC-778</ourAccountCode>
+      <yourAccountCode>CUST-3321</yourAccountCode>
+    </Header>
+    <Contact>
+      <contactName>Ada Lovelace</contactName>
+      <companyName>Analytical Engines Ltd</companyName>
+      <e-mail>ada.lovelace@example.com</e-mail>
+      <telephone>617-555-0101</telephone>
+    </Contact>
+    <DeliverTo>
+      <Address>
+        <street1>12 Main Street</street1>
+        <street2>Building B</street2>
+        <street3>Floor 2</street3>
+        <street4>Room 204</street4>
+        <city>Boston</city>
+        <stateProvince>MA</stateProvince>
+        <postalCode>02139</postalCode>
+        <country>US</country>
+      </Address>
+    </DeliverTo>
+    <BillTo>
+      <Address>
+        <street1>500 Market Street</street1>
+        <street2>Suite 900</street2>
+        <street3>Tower A</street3>
+        <street4>Mail Stop 9</street4>
+        <city>New York</city>
+        <stateProvince>NY</stateProvince>
+        <postalCode>10001</postalCode>
+        <country>US</country>
+      </Address>
+    </BillTo>
+    <Items>
+      <itemCount>2</itemCount>
+      <Item>
+        <itemNumber>1</itemNumber>
+        <partNumber>PN-1001</partNumber>
+        <yourPartNumber>YP-55</yourPartNumber>
+        <partDescription>Steel bracket</partDescription>
+        <Quantity>10</Quantity>
+        <unitOfMeasure>EA</unitOfMeasure>
+        <unitPrice>12.50</unitPrice>
+      </Item>
+    </Items>
+    <Footer>
+      <totalValue>125.00</totalValue>
+    </Footer>
+  </PurchaseOrder>
+  <PurchaseOrder>
+    <Header>
+      <orderNumber>4500124</orderNumber>
+      <orderDate>02 April 2001</orderDate>
+      <ourAccountCode>ACC-779</ourAccountCode>
+      <yourAccountCode>CUST-4410</yourAccountCode>
+    </Header>
+    <Contact>
+      <contactName>Grace Hopper</contactName>
+      <companyName>Compiler Works Inc</companyName>
+      <e-mail>grace.hopper@example.com</e-mail>
+      <telephone>212-555-0142</telephone>
+    </Contact>
+    <DeliverTo>
+      <Address>
+        <street1>8 Harbor Road</street1>
+        <street2>Unit 4</street2>
+        <street3>Gate 3</street3>
+        <street4>Bay 12</street4>
+        <city>Chicago</city>
+        <stateProvince>IL</stateProvince>
+        <postalCode>60601</postalCode>
+        <country>US</country>
+      </Address>
+    </DeliverTo>
+    <BillTo>
+      <Address>
+        <street1>77 Lake Avenue</street1>
+        <street2>Floor 5</street2>
+        <street3>Wing C</street3>
+        <street4>Desk 31</street4>
+        <city>Atlanta</city>
+        <stateProvince>GA</stateProvince>
+        <postalCode>30301</postalCode>
+        <country>US</country>
+      </Address>
+    </BillTo>
+    <Items>
+      <itemCount>3</itemCount>
+      <Item>
+        <itemNumber>1</itemNumber>
+        <partNumber>PN-2040</partNumber>
+        <yourPartNumber>YP-90</yourPartNumber>
+        <partDescription>Aluminium housing</partDescription>
+        <Quantity>4</Quantity>
+        <unitOfMeasure>BX</unitOfMeasure>
+        <unitPrice>99.99</unitPrice>
+      </Item>
+    </Items>
+    <Footer>
+      <totalValue>399.96</totalValue>
+    </Footer>
+  </PurchaseOrder>
+</PurchaseOrders>

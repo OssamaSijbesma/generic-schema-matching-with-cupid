@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Nested-Schema>
+  <Customer>
+    <SSN>123456789</SSN>
+    <Telephone>617-555-0101</Telephone>
+    <Name>
+      <FirstName>Ada</FirstName>
+      <LastName>Lovelace</LastName>
+    </Name>
+    <Address>
+      <Street>12 Main Street</Street>
+      <City>Boston</City>
+      <State>MA</State>
+      <Zip>12139</Zip>
+    </Address>
+  </Customer>
+  <Customer>
+    <SSN>234567891</SSN>
+    <Telephone>312-555-0142</Telephone>
+    <Name>
+      <FirstName>Grace</FirstName>
+      <LastName>Hopper</LastName>
+    </Name>
+    <Address>
+      <Street>8 Harbor Road</Street>
+      <City>Chicago</City>
+      <State>IL</State>
+      <Zip>60601</Zip>
+    </Address>
+  </Customer>
+  <Customer>
+    <SSN>345678912</SSN>
+    <Telephone>404-555-0177</Telephone>
+    <Name>
+      <FirstName>Alan</FirstName>
+      <LastName>Turing</LastName>
+    </Name>
+    <Address>
+      <Street>77 Lake Avenue</Street>
+      <City>Atlanta</City>
+      <State>GA</State>
+      <Zip>30301</Zip>
+    </Address>
+  </Customer>
+</Nested-Schema>

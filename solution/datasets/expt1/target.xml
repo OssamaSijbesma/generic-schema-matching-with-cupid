@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Schema2>
+  <Customer>
+    <Customer_Number>2001</Customer_Number>
+    <Name>Barbara Liskov</Name>
+    <Address>500 Market Street, New York</Address>
+  </Customer>
+  <Customer>
+    <Customer_Number>2002</Customer_Number>
+    <Name>Donald Knuth</Name>
+    <Address>3 Campus Drive, Stanford</Address>
+  </Customer>
+  <Customer>
+    <Customer_Number>2003</Customer_Number>
+    <Name>Margaret Hamilton</Name>
+    <Address>21 Orbit Lane, Houston</Address>
+  </Customer>
+</Schema2>

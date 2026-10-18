@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Flat-Schema>
+  <Customer>
+    <SSN>456789123</SSN>
+    <Telephone>212-555-0123</Telephone>
+    <FirstName>Barbara</FirstName>
+    <LastName>Liskov</LastName>
+    <Street>500 Market Street</Street>
+    <City>New York</City>
+    <State>NY</State>
+    <Zip>10001</Zip>
+  </Customer>
+  <Customer>
+    <SSN>567891234</SSN>
+    <Telephone>650-555-0188</Telephone>
+    <FirstName>Donald</FirstName>
+    <LastName>Knuth</LastName>
+    <Street>3 Campus Drive</Street>
+    <City>Stanford</City>
+    <State>CA</State>
+    <Zip>94305</Zip>
+  </Customer>
+  <Customer>
+    <SSN>678912345</SSN>
+    <Telephone>713-555-0166</Telephone>
+    <FirstName>Margaret</FirstName>
+    <LastName>Hamilton</LastName>
+    <Street>21 Orbit Lane</Street>
+    <City>Houston</City>
+    <State>TX</State>
+    <Zip>77058</Zip>
+  </Customer>
+</Flat-Schema>

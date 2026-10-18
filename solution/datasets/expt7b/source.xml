@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PurchaseOrders>
+  <PurchaseOrder>
+    <Header>
+      <Date>2001-03-14</Date>
+      <Number>4500123</Number>
+    </Header>
+    <Contact>
+      <ContactName>Ada Lovelace</ContactName>
+      <ContactFunctionCode>BuyerContact</ContactFunctionCode>
+      <ContactEmail>ada.lovelace@example.com</ContactEmail>
+      <ContactPhone>617-555-0101</ContactPhone>
+    </Contact>
+    <DeliverTo>
+      <entityIdentifier>Deliver-01</entityIdentifier>
+      <attn>Receiving Dock</attn>
+      <Street1>12 Main Street</Street1>
+      <Street2>Building B</Street2>
+      <Street3>Floor 2</Street3>
+      <Street4>Room 204</Street4>
+      <City>Boston</City>
+      <StateProvince>MA</StateProvince>
+      <stalCode>02139</stalCode>
+      <Country>US</Country>
+    </DeliverTo>
+    <BillTo>
+      <entityIdentifier>BILL-01</entityIdentifier>
+      <attn>Accounts Payable</attn>
+      <Street1>500 Market Street</Street1>
+      <Street2>Suite 900</Street2>
+      <Street3>Tower A</Street3>
+      <Street4>Mail Stop 9</Street4>
+      <City>New York</City>
+      <StateProvince>NY</StateProvince>
+      <stalCode>10001</stalCode>
+      <Country>US</Country>
+    </BillTo>
+    <Lines>
+      <count>2</count>
+      <startAt>1</startAt>
+      <Item>
+        <line>1</line>
+        <Quantity>10</Quantity>
+        <unitOfMeasure>EA</unitOfMeasure>
+        <unitPrice>12.50</unitPrice>
+        <partno>PN-1001</partno>
+      </Item>
+    </Lines>
+  </PurchaseOrder>
+  <PurchaseOrder>
+    <Header>
+      <Date>2001-04-02</Date>
+      <Number>4500124</Number>
+    </Header>
+    <Contact>
+      <ContactName>Grace Hopper</ContactName>
+      <ContactFunctionCode>SellerContact</ContactFunctionCode>
+      <ContactEmail>grace.hopper@example.com</ContactEmail>
+      <ContactPhone>212-555-0142</ContactPhone>
+    </Contact>
+    <DeliverTo>
+      <entityIdentifier>Deliver-02</entityIdentifier>
+      <attn>Warehouse Manager</attn>
+      <Street1>8 Harbor Road</Street1>
+      <Street2>Unit 4</Street2>
+      <Street3>Gate 3</Street3>
+      <Street4>Bay 12</Street4>
+      <City>Chicago</City>
+      <StateProvince>IL</StateProvince>
+      <stalCode>60601</stalCode>
+      <Country>US</Country>
+    </DeliverTo>
+    <BillTo>
+      <entityIdentifier>BILL-02</entityIdentifier>
+      <attn>Finance Department</attn>
+      <Street1>77 Lake Avenue</Street1>
+      <Street2>Floor 5</Street2>
+      <Street3>Wing C</Street3>
+      <Street4>Desk 31</Street4>
+      <City>Atlanta</City>
+      <StateProvince>GA</StateProvince>
+      <stalCode>30301</stalCode>
+      <Country>US</Country>
+    </BillTo>
+    <Lines>
+      <count>3</count>
+      <startAt>1</startAt>
+      <Item>
+        <line>1</line>
+        <Quantity>4</Quantity>
+        <unitOfMeasure>BX</unitOfMeasure>
+        <unitPrice>99.99</unitPrice>
+        <partno>PN-2040</partno>
+      </Item>
+    </Lines>
+  </PurchaseOrder>
+</PurchaseOrders>

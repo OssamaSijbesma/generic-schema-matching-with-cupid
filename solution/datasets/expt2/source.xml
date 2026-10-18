@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Schema1>
+  <Customer>
+    <Customer_Number>1001</Customer_Number>
+    <Name>Ada Lovelace</Name>
+    <Address>12 Main Street, Boston</Address>
+    <Telephone>617-555-0101</Telephone>
+  </Customer>
+  <Customer>
+    <Customer_Number>1002</Customer_Number>
+    <Name>Grace Hopper</Name>
+    <Address>8 Harbor Road, Chicago</Address>
+    <Telephone>312-555-0142</Telephone>
+  </Customer>
+  <Customer>
+    <Customer_Number>1003</Customer_Number>
+    <Name>Alan Turing</Name>
+    <Address>77 Lake Avenue, Atlanta</Address>
+    <Telephone>404-555-0177</Telephone>
+  </Customer>
+</Schema1>
