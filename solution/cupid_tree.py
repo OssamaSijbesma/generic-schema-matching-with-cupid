@@ -15,6 +15,8 @@ except Exception:
 
 
 class Node:
+    """A schema-tree element with a parent link and optional leaf data type."""
+
     def __init__(self, name, parent=None):
         self.name, self.parent = name, parent
         self.children, self.dtype = [], None
@@ -28,6 +30,7 @@ class Node:
         return (self.parent.path + "." if self.parent else "") + self.name
 
     def post_order(self):
+        # Visit descendants first so parent similarities can use completed child scores.
         for c in self.children:
             yield from c.post_order()
         yield self
@@ -45,6 +48,7 @@ class Node:
 
 def _infer_type(values):
     def kind(v):
+        # Normalize whitespace and classify each XML text value by its basic scalar type.
         v = (v or "").strip()
         if v.lower() in ("true", "false"):
             return "boolean"
@@ -59,6 +63,7 @@ def _infer_type(values):
             return "string"
 
     kinds = {kind(v) for v in values}
+    # Mixed integer/float samples widen to float; other mixed types fall back to string.
     if kinds == {"integer", "float"}:
         return "float"
     return kinds.pop() if len(kinds) == 1 else "string"
@@ -72,6 +77,7 @@ def load_schema_tree(path):
     samples = {}
 
     def merge(xml_node, node):
+        # Merge each record into one tree, reusing same-named children across records.
         for child in xml_node:
             match = next((c for c in node.children if c.name == child.tag), None)
             if match is None:
@@ -80,6 +86,7 @@ def load_schema_tree(path):
             if len(child):
                 merge(child, match)
             else:
+                # Keep all observed leaf values so type inference reflects the records.
                 samples.setdefault(match, []).append(child.text)
 
     for rec in records:
@@ -91,11 +98,13 @@ def load_schema_tree(path):
 
 # ---- linguistic matching -------------------------------------------------
 def tokenize(name):
+    # Split camelCase first, then split on punctuation, underscores, and spaces.
     name = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", name)
     return [t.lower() for t in re.split(r"[^A-Za-z0-9]+", name) if t]
 
 
 def _token_sim(a, b):
+    # Exact names score highest; optional WordNet and substring matches provide weaker evidence.
     if a == b:
         return 1.0
     if wordnet is not None:
@@ -111,6 +120,7 @@ def name_sim(n1, n2):
     t1, t2 = tokenize(n1), tokenize(n2)
     if not t1 or not t2:
         return 0.0
+    # Average best token matches in both directions so extra tokens affect the score.
     fwd = sum(max(_token_sim(a, b) for b in t2) for a in t1) / len(t1)
     bwd = sum(max(_token_sim(b, a) for a in t1) for b in t2) / len(t2)
     return (fwd + bwd) / 2
@@ -152,8 +162,10 @@ def cupid_tree_match(
     th_ns=0.7,
     **_,
 ):
+    # Post-order lists allow structural similarities to be propagated bottom-up.
     s_nodes, t_nodes = list(source.post_order()), list(target.post_order())
 
+    # Compute linguistic scores for every node pair, pruning very weak name matches.
     lsim = {}
     for s in s_nodes:
         for t in t_nodes:
@@ -161,6 +173,7 @@ def cupid_tree_match(
             lsim[s, t] = ns if ns >= th_ns * 0.5 else 0.0
 
     # Leaf structural similarity starts from the data type compatibility table.
+    # Combine that evidence with name similarity; inner nodes begin with name evidence only.
     ssim, wsim = {}, {}
     for s in s_nodes:
         for t in t_nodes:
@@ -174,11 +187,13 @@ def cupid_tree_match(
         for t in t_nodes:
             if s.is_leaf and t.is_leaf:
                 continue
+            # Compare the fraction of each node's descendant leaves supported by a strong pair.
             ls, lt = s.leaves(), t.leaves()
             strong_s = sum(any(wsim[a, b] > th_accept for b in lt) for a in ls)
             strong_t = sum(any(wsim[a, b] > th_accept for a in ls) for b in lt)
             ssim[s, t] = (strong_s + strong_t) / (len(ls) + len(lt))
             wsim[s, t] = w_struct * ssim[s, t] + (1 - w_struct) * lsim[s, t]
+            # Reinforce descendant leaf pairs for promising structures, or dampen weak ones.
             factor = (
                 c_inc
                 if wsim[s, t] > th_high
