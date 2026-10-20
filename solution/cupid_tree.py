@@ -2,6 +2,7 @@
 
 import re
 import xml.etree.ElementTree as ET
+from collections.abc import Mapping
 from datetime import datetime
 from math import isfinite
 
@@ -47,6 +48,9 @@ class Node:
             c.show(indent + 1)
 
 
+TYPES = ["integer", "float", "boolean", "date", "string"]
+
+
 def _infer_type(values):
     def kind(v):
         # Normalize whitespace and classify each XML text value by its basic scalar type.
@@ -70,8 +74,15 @@ def _infer_type(values):
     return kinds.pop() if len(kinds) == 1 else "string"
 
 
-def load_schema_tree(path):
-    """Root = record element; children = merged element structure of all records; leaf types inferred from values."""
+def load_schema_tree(path, type_overrides=None):
+    """Load a merged XML instance tree and optionally use declared leaf types.
+
+    Type overrides are keyed by dotted element path, e.g.
+    ``PO.POHeader.PONumber``. Unspecified leaf types are inferred from samples.
+    """
+    if type_overrides is not None and not isinstance(type_overrides, Mapping):
+        raise TypeError("Type overrides must be a mapping of element paths to types.")
+
     xml_root = ET.parse(path).getroot()
     records = list(xml_root)
     root = Node(records[0].tag)
@@ -92,8 +103,37 @@ def load_schema_tree(path):
 
     for rec in records:
         merge(rec, root)
+
+    leaf_paths = {leaf.path for leaf in samples}
+    if type_overrides is not None:
+        invalid_keys = [
+            path for path in type_overrides if not isinstance(path, str) or not path
+        ]
+        if invalid_keys:
+            raise ValueError("Type override paths must be non-empty strings.")
+        invalid_paths = set(type_overrides) - leaf_paths
+        if invalid_paths:
+            raise ValueError(
+                "Type overrides must refer to leaf paths in the XML tree: "
+                + ", ".join(sorted(invalid_paths))
+            )
+        invalid_types = {
+            path: dtype
+            for path, dtype in type_overrides.items()
+            if not isinstance(dtype, str) or dtype not in TYPES
+        }
+        if invalid_types:
+            raise ValueError(
+                "Type overrides must use supported types "
+                f"{TYPES}; invalid entries: {invalid_types}"
+            )
+
     for leaf, vals in samples.items():
-        leaf.dtype = _infer_type(vals)
+        leaf.dtype = (
+            type_overrides[leaf.path]
+            if type_overrides is not None and leaf.path in type_overrides
+            else _infer_type(vals)
+        )
     return root
 
 
@@ -118,9 +158,66 @@ def _token_sim(a, b):
     return 0.0
 
 
-def name_sim(n1, n2):
+def _build_category_index(thesaurus):
+    """Map normalized token phrases to their shared thesaurus category."""
+    if thesaurus is None:
+        return None
+
+    categories = {}
+    for category, aliases in thesaurus.items():
+        if not isinstance(category, str) or not category.strip():
+            raise ValueError("Thesaurus category names must be non-empty strings.")
+        if not isinstance(aliases, (list, tuple)) or not aliases:
+            raise ValueError(f"Thesaurus category {category!r} must have aliases.")
+        for alias in [category, *aliases]:
+            if not isinstance(alias, str) or not alias.strip():
+                raise ValueError("Thesaurus aliases must be non-empty strings.")
+            phrase = tuple(tokenize(alias))
+            if not phrase:
+                raise ValueError(f"Thesaurus alias {alias!r} has no tokens.")
+            existing = categories.get(phrase)
+            if existing is not None and existing != category:
+                raise ValueError(
+                    f"Thesaurus alias {alias!r} belongs to multiple categories."
+                )
+            categories[phrase] = category
+    return sorted(categories.items(), key=lambda item: len(item[0]), reverse=True)
+
+
+def _categorize_name(name, category_index):
+    """Replace recognized token phrases with their shared category identifiers."""
+    tokens = tokenize(name)
+    categorized = []
+    i = 0
+    while i < len(tokens):
+        match = next(
+            (
+                (phrase, category)
+                for phrase, category in category_index
+                if tuple(tokens[i : i + len(phrase)]) == phrase
+            ),
+            None,
+        )
+        if match is None:
+            categorized.append(tokens[i])
+            i += 1
+        else:
+            phrase, category = match
+            categorized.append(category)
+            i += len(phrase)
+    return categorized
+
+
+def name_sim(n1, n2, category_index=None):
     # Cupid treats the token collections as sets, so repeated tokens count once.
-    t1, t2 = sorted(set(tokenize(n1))), sorted(set(tokenize(n2)))
+    if category_index is None:
+        t1, t2 = tokenize(n1), tokenize(n2)
+    else:
+        t1, t2 = (
+            _categorize_name(n1, category_index),
+            _categorize_name(n2, category_index),
+        )
+    t1, t2 = sorted(set(t1)), sorted(set(t2))
     if not t1 or not t2:
         return 0.0
     # Average every token's best cross-name match, weighted by the total token count.
@@ -129,19 +226,11 @@ def name_sim(n1, n2):
     return (best_from_t1 + best_from_t2) / (len(t1) + len(t2))
 
 
-TYPES = ["integer", "float", "boolean", "date", "string"]
-
-# Cupid initializes leaf structural similarity with type-compatibility values in [0, 0.5],
-# with identical types scored 0.5. Off-diagonal values below are implementation-selected.
+# The paper specifies [0, 0.5] compatibility and 0.5 for identical types, but
+# does not publish the off-diagonal table entries. This conservative baseline
+# assigns no compatibility to different types.
 TYPE_COMPAT = pd.DataFrame(
-    [
-        # integer float boolean date string
-        [0.50, 0.40, 0.20, 0.10, 0.15],  # integer
-        [0.40, 0.50, 0.10, 0.10, 0.15],  # float
-        [0.20, 0.10, 0.50, 0.05, 0.15],  # boolean
-        [0.10, 0.10, 0.05, 0.50, 0.20],  # date
-        [0.15, 0.15, 0.15, 0.20, 0.50],  # string
-    ],
+    [[0.50 if row == column else 0.2 for column in TYPES] for row in TYPES],
     index=TYPES,
     columns=TYPES,
 )
@@ -158,21 +247,21 @@ def type_compat(t1, t2):
 def cupid_tree_match(
     source,
     target,
-    leaf_w_struct=0.5,
     w_struct=0.6,
     th_accept=0.5,
     th_high=0.6,
     th_low=0.35,
     c_inc=1.2,
     c_dec=0.9,
+    thesaurus=None,
     **_,
 ):
     """Match schema leaves using Cupid's bottom-up tree-similarity procedure.
 
-    Linguistic matching is a lightweight token-based approximation; Cupid's
-    full category construction and domain thesaurus are not implemented here.
+    Linguistic matching uses token categories when a thesaurus is provided;
+    without one, it remains a lightweight token-based approximation.
     """
-    if not 0.0 <= leaf_w_struct <= 1.0 or not 0.0 <= w_struct <= 1.0:
+    if not 0.0 <= w_struct <= 1.0:
         raise ValueError("Structural weights must be between 0 and 1.")
     if not 0.0 <= th_low < th_accept < th_high <= 1.0:
         raise ValueError(
@@ -185,23 +274,22 @@ def cupid_tree_match(
 
     # Post-order lists allow structural similarities to be propagated bottom-up.
     s_nodes, t_nodes = list(source.post_order()), list(target.post_order())
+    category_index = _build_category_index(thesaurus)
 
     # Compute the simplified pairwise linguistic score for every node pair.
     lsim = {}
     for s in s_nodes:
         for t in t_nodes:
-            lsim[s, t] = name_sim(s.name, t.name)
+            lsim[s, t] = name_sim(s.name, t.name, category_index)
 
-    # Leaf structural similarity starts from the data type compatibility table.
-    # Combine that evidence with name similarity; inner nodes begin with name evidence only.
+    # Leaf structural similarity starts from type compatibility; all pairs use w_struct.
     ssim, wsim = {}, {}
     for s in s_nodes:
         for t in t_nodes:
             ssim[s, t] = (
                 type_compat(s.dtype, t.dtype) if (s.is_leaf and t.is_leaf) else 0.0
             )
-            w = leaf_w_struct if (s.is_leaf and t.is_leaf) else w_struct
-            wsim[s, t] = w * ssim[s, t] + (1 - w) * lsim[s, t]
+            wsim[s, t] = w_struct * ssim[s, t] + (1 - w_struct) * lsim[s, t]
 
     for s in s_nodes:
         for t in t_nodes:
@@ -228,10 +316,7 @@ def cupid_tree_match(
                 for a in ls:
                     for b in lt:
                         ssim[a, b] = min(1.0, ssim[a, b] * factor)
-                        wsim[a, b] = (
-                            leaf_w_struct * ssim[a, b]
-                            + (1 - leaf_w_struct) * lsim[a, b]
-                        )
+                        wsim[a, b] = w_struct * ssim[a, b] + (1 - w_struct) * lsim[a, b]
 
     # Leaf mapping: every leaf pair with wsim >= th_accept, best first (n:m allowed).
     pairs = sorted(

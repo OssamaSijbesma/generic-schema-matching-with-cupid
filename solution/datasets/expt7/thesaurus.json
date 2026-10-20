@@ -1,0 +1,27 @@
+{
+  "purchase_order": [
+    "PO",
+    "purchase order",
+    "purchase orders"
+  ],
+  "unit_of_measure": [
+    "UOM",
+    "unit of measure"
+  ],
+  "quantity": [
+    "Qty",
+    "quantity"
+  ],
+  "number": [
+    "Num",
+    "number"
+  ],
+  "invoice": [
+    "Invoice",
+    "Bill"
+  ],
+  "ship": [
+    "Ship",
+    "Deliver"
+  ]
+}
